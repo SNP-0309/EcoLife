@@ -59,16 +59,46 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user._id);
 
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
+res.status(200).json({
+  success: true,
+  message: "Login Successful",
+  user,
+});
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+ 
+};
+exports.logout = async (req, res) => {
+  try {
+    res.clearCookie("token");
+
     res.status(200).json({
       success: true,
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        ecoPoints: user.ecoPoints,
-      },
+      message: "Logout Successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+exports.getProfile = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      user: req.user,
     });
   } catch (error) {
     res.status(500).json({
