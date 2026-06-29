@@ -1,11 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-const protect = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
+const protect = require("../middleware/authMiddleware");
 
-const { scanWaste } = require("../controllers/scanController");
+const {
+  scanWaste,
+  getScanHistory,
+} = require("../controllers/scanController");
 
-router.post("/", protect, upload.single("image"), scanWaste);
+router.post("/scan", protect, upload.single("image"), scanWaste);
+
+router.get("/history", protect, getScanHistory);
 
 module.exports = router;
