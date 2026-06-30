@@ -30,7 +30,14 @@ router.post(
   validate,
   register
 );
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ 
 
+ */
 router.post(
   "/login",
   loginValidation,
