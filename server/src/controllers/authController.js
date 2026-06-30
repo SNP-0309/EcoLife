@@ -4,7 +4,8 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const uploadToCloudinary = require("../services/cloudinaryService");
 const cloudinary = require("../config/cloudinary");
-
+const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -44,12 +45,9 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
+ if (!user) {
+  throw new AppError("User not found.", 404);
+}
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -170,66 +168,51 @@ exports.updateProfile = async (req, res) => {
 // @route   PUT /api/auth/change-password
 // @access  Private
 
-exports.changePassword = async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
+exports.changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
 
-    // Check if both passwords are provided
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password and new password are required.",
-      });
-    }
-
-    // Find logged-in user
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    // Verify current password
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password is incorrect.",
-      });
-    }
-
-    // Prevent using the same password
-    if (currentPassword === newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "New password must be different from the current password.",
-      });
-    }
-
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Password changed successfully.",
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
       success: false,
-      message: error.message,
+      message: "Current password and new password are required.",
     });
   }
-};
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found.",
+    });
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isMatch) {
+    return res.status(400).json({
+      success: false,
+      message: "Current password is incorrect.",
+    });
+  }
+
+  if (currentPassword === newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be different from the current password.",
+    });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password changed successfully.",
+  });
+});
 // @desc Update Profile Picture
 // @route PUT /api/auth/profile-picture
 // @access Private
