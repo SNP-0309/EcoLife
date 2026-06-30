@@ -1,7 +1,7 @@
 const uploadToCloudinary = require("../services/cloudinaryService");
 const analyzeWaste = require("../services/geminiService");
 const Scan = require("../models/Scan");
-
+const cloudinary = require("../config/cloudinary");
 // @desc    Scan waste image
 // @route   POST /api/scan
 // @access  Private
@@ -77,6 +77,70 @@ exports.getScanHistory = async (req, res) => {
 
   } catch (error) {
     console.error("History Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+exports.getScanById = async (req, res) => {
+  try {
+    const scan = await Scan.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        success: false,
+        message: "Scan not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      scan,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+exports.deleteScan = async (req, res) => {
+  try {
+    const scan = await Scan.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!scan) {
+      return res.status(404).json({
+        success: false,
+        message: "Scan not found.",
+      });
+    }
+
+    // Delete image from Cloudinary
+    await cloudinary.uploader.destroy(scan.public_id);
+
+    // Delete from MongoDB
+    await scan.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Scan deleted successfully.",
+    });
+
+  } catch (error) {
+    console.error(error);
 
     res.status(500).json({
       success: false,

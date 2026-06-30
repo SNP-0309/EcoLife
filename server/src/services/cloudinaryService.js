@@ -1,21 +1,14 @@
 const cloudinary = require("../config/cloudinary");
-const streamifier = require("streamifier");
 
-const uploadToCloudinary = (buffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: "EcoLife",
-      },
-      (error, result) => {
-        if (error) return reject(error);
+const uploadToCloudinary = async (
+  buffer,
+  folder = "EcoLife",
+  mimeType = "image/jpeg"
+) => {
+  const base64Image = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
-        resolve(result);
-      }
-    );
-
-    streamifier.createReadStream(buffer).pipe(stream);
+  return await cloudinary.uploader.upload(base64Image, {
+    folder,
   });
 };
-
 module.exports = uploadToCloudinary;

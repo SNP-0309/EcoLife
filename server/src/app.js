@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const scanRoutes = require("./routes/scanRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api", scanRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.get("/", (req, res) => {
   res.send("EcoLife API Running 🚀");
 });
