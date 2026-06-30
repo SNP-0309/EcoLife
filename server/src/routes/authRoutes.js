@@ -19,6 +19,8 @@ const validate = require("../middleware/validationMiddleware");
 const {
   registerValidation,
   loginValidation,
+  updateProfileValidation,
+  changePasswordValidation,
 } = require("../validations/authValidation");
 
 // Public Routes
@@ -41,9 +43,21 @@ router.post("/logout", protect, logout);
 
 router.get("/profile", protect, getProfile);
 
-router.put("/profile", protect, updateProfile);
+router.put(
+  "/profile",
+  protect,
+  updateProfileValidation,
+  validate,
+  updateProfile
+);
 
-router.put("/change-password", protect, changePassword);
+router.put(
+  "/change-password",
+  protect,
+  changePasswordValidation,
+  validate,
+  changePassword
+);
 
 router.put(
   "/profile-picture",
