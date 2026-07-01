@@ -1,11 +1,7 @@
+import AppRoutes from "./routes/AppRoutes";
+
 function App() {
-  return (
-    <div>
-      <h1 className="text-4xl font-bold text-center mt-20">
-        EcoLife 🌱
-      </h1>
-    </div>
-  );
+  return <AppRoutes />;
 }
 
 export default App;
